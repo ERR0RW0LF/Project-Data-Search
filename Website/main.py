@@ -1,27 +1,23 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse, Response, StreamingResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import requests
 import json
 import os
 import sys
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/")
-def read_root():
-    html_content = os.open("html/index.html", os.O_RDONLY)
-    html_content = os.read(html_content, 1000)
-    return HTMLResponse(content=html_content, status_code=200)
-
-
-@app.get("/theme/{theme_name}")
-def read_item(theme_name: str):
-    return {"theme_name": theme_name}
-
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 
